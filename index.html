@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Custom Hand</title>
+<title>Scroll Money + Big Cash Bills</title>
 
 <style>
 body {
@@ -12,7 +12,7 @@ body {
     overflow-x: hidden;
 }
 
-/* HAND WRAPPER */
+/* HAND */
 .wrap {
     position: fixed;
     top: 50%;
@@ -21,7 +21,6 @@ body {
     will-change: transform;
 }
 
-/* 🖼️ YOUR CUSTOM HAND IMAGE */
 #hand {
     width: 160px;
     height: 160px;
@@ -129,7 +128,7 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-/* MONEY */
+/* 💸 MONEY BURST */
 function spawnMoney(x, y) {
     for (let i = 0; i < 14; i++) {
         particles.push({
@@ -142,7 +141,7 @@ function spawnMoney(x, y) {
     }
 }
 
-/* COINS */
+/* 💰 COINS */
 function spawnCoins(x, y) {
     for (let i = 0; i < 45; i++) {
         particles.push({
@@ -181,7 +180,7 @@ window.addEventListener("scroll", () => {
     }
 });
 
-/* ANIMATION */
+/* ANIMATION LOOP */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -190,15 +189,15 @@ function animate() {
     const squeeze = Math.pow(Math.abs(Math.sin(current * 6 * Math.PI)), 1.5);
     const rub = Math.sin(current * 30);
 
-    /* apply motion to image */
     hand.style.transform =
         "translate(" + (rub * 6) + "px," + (squeeze * -4) + "px) " +
         "rotate(" + (rub * 8) + "deg) " +
         "scale(" + (1 - squeeze * 0.08) + ")";
 
-    /* particles */
+    /* CLEAR */
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    /* PARTICLES */
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
@@ -218,8 +217,15 @@ function animate() {
             ctx.arc(0, 0, 6, 0, Math.PI * 2);
             ctx.fill();
         } else {
-            ctx.fillStyle = "#00ff88";
-            ctx.fillRect(-10, -5, 20, 10);
+            /* 💸 BIG CASH BILL */
+            ctx.fillStyle = "#00c853";
+            ctx.fillRect(-20, -12, 40, 24);
+
+            ctx.strokeStyle = "rgba(0,0,0,0.3)";
+            ctx.strokeRect(-20, -12, 40, 24);
+
+            ctx.fillStyle = "rgba(255,255,255,0.2)";
+            ctx.fillRect(-10, -6, 20, 12);
         }
 
         ctx.restore();
