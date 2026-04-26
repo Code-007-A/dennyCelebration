@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Earnings + Sound</title>
+<title>Scroll Money + Italian Currency Earnings</title>
 
 <style>
 body {
@@ -49,7 +49,7 @@ canvas {
     opacity: 0.6;
 }
 
-/* 💰 COUNTER */
+/* 💰 EARNINGS */
 #earnings {
     position: fixed;
     top: 160px;
@@ -103,7 +103,7 @@ canvas {
 
 <body>
 
-<div id="earnings">Earnings: $0</div>
+<div id="earnings">Earnings: $0 | 🇮🇹 Italian Currency €0</div>
 
 <canvas id="fx"></canvas>
 
@@ -113,7 +113,7 @@ canvas {
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll → earn money 💸 → with sound 🔊</div>
+<div class="text">Scroll → earn money 💸 → bills stack + sound</div>
 
 <!-- 🔊 SOUND -->
 <audio id="cashSound" src="cash.mp3" preload="auto"></audio>
@@ -137,6 +137,8 @@ let triggered = false;
 let earnings = 0;
 let displayedEarnings = 0;
 
+const usdToEur = 0.92; // 🇮🇹 Italian currency conversion
+
 const particles = [];
 const stack = [];
 
@@ -147,9 +149,9 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-/* 🔊 play sound safely */
+/* 🔊 sound */
 function playCash() {
-    const s = sound.cloneNode(); // allows overlapping sounds
+    const s = sound.cloneNode();
     s.volume = 0.3;
     s.play().catch(()=>{});
 }
@@ -230,8 +232,10 @@ function animate() {
 
         ctx.fillStyle = "#00c853";
         ctx.fillRect(-20, -12, 40, 24);
+
         ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.strokeRect(-20, -12, 40, 24);
+
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.fillRect(-10, -6, 20, 12);
 
@@ -260,6 +264,7 @@ function animate() {
         } else {
 
             if (p.y > canvas.height - 40) {
+
                 stack.push({
                     x: p.x,
                     y: canvas.height - 40,
@@ -267,7 +272,7 @@ function animate() {
                 });
 
                 earnings += 1;
-                playCash(); // 🔊 SOUND TRIGGER
+                playCash();
 
                 particles.splice(i, 1);
                 ctx.restore();
@@ -276,8 +281,10 @@ function animate() {
 
             ctx.fillStyle = "#00c853";
             ctx.fillRect(-20, -12, 40, 24);
+
             ctx.strokeStyle = "rgba(0,0,0,0.3)";
             ctx.strokeRect(-20, -12, 40, 24);
+
             ctx.fillStyle = "rgba(255,255,255,0.2)";
             ctx.fillRect(-10, -6, 20, 12);
         }
@@ -287,8 +294,14 @@ function animate() {
         if (p.life <= 0) particles.splice(i, 1);
     }
 
+    /* 💰 UPDATE DISPLAY */
     displayedEarnings += (earnings - displayedEarnings) * 0.08;
-    earningsEl.textContent = "Earnings: $" + displayedEarnings.toFixed(0);
+
+    const eur = displayedEarnings * usdToEur;
+
+    earningsEl.textContent =
+        "Earnings: $" + displayedEarnings.toFixed(0) +
+        " | 🇮🇹 Italian Currency €" + eur.toFixed(0);
 }
 
 animate();
