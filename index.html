@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scroll Money + Coin Explosion</title>
+
+<style>
+body {
+    margin: 0;
+    height: 400vh;
+    background: radial-gradient(circle at center, #111, #000);
+    overflow-x: hidden;
+}
+
+.wrap {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hand {
+    font-size: 140px;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.text {
+    position: fixed;
+    bottom: 40px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fx"></canvas>
+
+<div class="wrap">
+    <div id="hand" class="hand">🤌</div>
+</div>
+
+<div class="text">Scroll to generate money 💸 (reach bottom for bonus)</div>
+
+<script>
+const canvas = document.getElementById("fx");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+/* ---------------- HAND ---------------- */
+const hand = document.getElementById("hand");
+
+let target = 0;
+let current = 0;
+let lastBurst = 0;
+let coinBurstTriggered = false;
+
+/* ---------------- PARTICLES ---------------- */
+const particles = [];
+
+/* money burst */
+function spawnMoney(x, y) {
+    for (let i = 0; i < 14; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.8) * 10,
+            life: 1,
+            type: "bill"
+        });
+    }
+}
+
+/* coin burst (final reward) */
+function spawnCoins(x, y) {
+    for (let i = 0; i < 45; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 12,
+            vy: (Math.random() - 1.2) * 14,
+            life: 1,
+            type: "coin",
+            rot: Math.random() * 360
+        });
+    }
+}
+
+/* scroll */
+window.addEventListener("scroll", () => {
+    const max = document.body.scrollHeight - window.innerHeight;
+    target = window.scrollY / max;
+
+    /* money burst during scroll */
+    const now = performance.now();
+    if (now - lastBurst > 90) {
+        spawnMoney(window.innerWidth / 2, window.innerHeight / 2);
+        lastBurst = now;
+    }
+
+    /* detect bottom */
+    if (target >= 0.98 && !coinBurstTriggered) {
+        spawnCoins(window.innerWidth / 2, window.innerHeight / 2);
+        coinBurstTriggered = true;
+    }
+
+    /* reset if scroll back up */
+    if (target < 0.9) {
+        coinBurstTriggered = false;
+    }
+});
+
+/* animation loop */
+function animate() {
+    requestAnimationFrame(animate);
+
+    current += (target - current) * 0.08;
+
+    const squeeze = Math.pow(Math.abs(Math.sin(current * 6 * Math.PI)), 1.5);
+    const rub = Math.sin(current * 30);
+
+    hand.style.transform = `
+        translate(${rub * 6}px, ${squeeze * -4}px)
+        rotate(${rub * 8}deg)
+        scale(${1 - squeeze * 0.08})
+    `;
+
+    /* clear canvas */
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    /* draw particles */
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.3;
+        p.life -= 0.02;
+
+        ctx.save();
+        ctx.globalAlpha = p.life;
+
+        ctx.translate(p.x, p.y);
+
+        if (p.type === "coin") {
+            ctx.rotate((p.rot += 5) * Math.PI / 180);
+            ctx.fillStyle = "#ffd700";
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = "#00ff88";
+            ctx.fillRect(-10, -5, 20, 10);
+        }
+
+        ctx.restore();
+
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+animate();
+</script>
+
+</body>
+</html>
