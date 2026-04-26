@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Stack Earnings</title>
+<title>Scroll Money + Earnings Stack</title>
 
 <style>
 body {
@@ -47,6 +47,19 @@ canvas {
     color: white;
     font-family: Arial;
     opacity: 0.6;
+}
+
+/* 💰 EARNINGS COUNTER */
+#earnings {
+    position: fixed;
+    top: 160px;
+    left: 20px;
+    color: #00ff88;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: bold;
+    z-index: 20;
+    text-shadow: 0 0 10px rgba(0,255,136,0.4);
 }
 
 /* 🇮🇹 BANNER */
@@ -95,6 +108,8 @@ canvas {
 
 <body>
 
+<div id="earnings">Earnings: $0</div>
+
 <canvas id="fx"></canvas>
 
 <div id="banner"><span>Happy Anniversary, Denny!</span></div>
@@ -103,7 +118,7 @@ canvas {
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll → earn money 💸 → bills stack at bottom</div>
+<div class="text">Scroll → earn money 💸 → bills stack like real earnings</div>
 
 <script>
 window.addEventListener("load", () => {
@@ -113,14 +128,18 @@ const ctx = canvas.getContext("2d");
 
 const hand = document.getElementById("hand");
 const banner = document.getElementById("banner");
+const earningsEl = document.getElementById("earnings");
 
 let target = 0;
 let current = 0;
 let lastBurst = 0;
 let triggered = false;
 
+let earnings = 0;
+let displayedEarnings = 0;
+
 const particles = [];
-const stack = [];   // 🧱 MONEY STACK
+const stack = [];
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -181,7 +200,7 @@ window.addEventListener("scroll", () => {
     }
 });
 
-/* ANIMATION */
+/* ANIMATION LOOP */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -197,7 +216,7 @@ function animate() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    /* 🧱 DRAW STACKED MONEY */
+    /* 🧱 STACK DRAW */
     for (let i = 0; i < stack.length; i++) {
         const b = stack[i];
 
@@ -238,13 +257,16 @@ function animate() {
             ctx.fill();
         } else {
 
-            /* 💰 BIG CASH BILL */
+            /* 💰 BILL STACK LOGIC */
             if (p.y > canvas.height - 40) {
+
                 stack.push({
                     x: p.x,
                     y: canvas.height - 40,
                     rot: (Math.random() - 0.5) * 0.4
                 });
+
+                earnings += 1;
 
                 particles.splice(i, 1);
                 ctx.restore();
@@ -265,6 +287,10 @@ function animate() {
 
         if (p.life <= 0) particles.splice(i, 1);
     }
+
+    /* 💰 SMOOTH COUNTER */
+    displayedEarnings += (earnings - displayedEarnings) * 0.08;
+    earningsEl.textContent = "Earnings: $" + displayedEarnings.toFixed(0);
 }
 
 animate();
