@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Coin Explosion</title>
+<title>Scroll Money + Italian Banner</title>
 
 <style>
 body {
@@ -12,6 +12,7 @@ body {
     overflow-x: hidden;
 }
 
+/* HAND */
 .wrap {
     position: fixed;
     top: 50%;
@@ -23,6 +24,7 @@ body {
     font-size: 140px;
 }
 
+/* CANVAS */
 canvas {
     position: fixed;
     top: 0;
@@ -30,6 +32,7 @@ canvas {
     pointer-events: none;
 }
 
+/* TEXT */
 .text {
     position: fixed;
     bottom: 40px;
@@ -39,6 +42,51 @@ canvas {
     font-family: Arial;
     opacity: 0.6;
 }
+
+/* 🇮🇹 BANNER */
+#banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 130px;
+
+    background: linear-gradient(
+        90deg,
+        #009246 0%,
+        #ffffff 35%,
+        #ffffff 65%,
+        #ce2b37 100%
+    );
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 28px;
+    font-family: Arial;
+    font-weight: bold;
+    color: #111;
+
+    transform: translateY(-130px);
+    transition: transform 0.8s ease;
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* readability overlay */
+#banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.2);
+}
+
+/* text above overlay */
+#banner span {
+    position: relative;
+    z-index: 2;
+}
 </style>
 </head>
 
@@ -46,11 +94,14 @@ canvas {
 
 <canvas id="fx"></canvas>
 
+<!-- 🇮🇹 Banner -->
+<div id="banner"><span>Happy Anniversary, Denny!</span></div>
+
 <div class="wrap">
     <div id="hand" class="hand">🤌</div>
 </div>
 
-<div class="text">Scroll to generate money 💸 (reach bottom for bonus)</div>
+<div class="text">Scroll to generate money 💸 → reach bottom for surprise</div>
 
 <script>
 const canvas = document.getElementById("fx");
@@ -64,18 +115,18 @@ window.addEventListener("resize", () => {
     canvas.height = window.innerHeight;
 });
 
-/* ---------------- HAND ---------------- */
+/* HAND */
 const hand = document.getElementById("hand");
+const banner = document.getElementById("banner");
 
 let target = 0;
 let current = 0;
 let lastBurst = 0;
-let coinBurstTriggered = false;
+let triggered = false;
 
-/* ---------------- PARTICLES ---------------- */
+/* PARTICLES */
 const particles = [];
 
-/* money burst */
 function spawnMoney(x, y) {
     for (let i = 0; i < 14; i++) {
         particles.push({
@@ -88,7 +139,6 @@ function spawnMoney(x, y) {
     }
 }
 
-/* coin burst (final reward) */
 function spawnCoins(x, y) {
     for (let i = 0; i < 45; i++) {
         particles.push({
@@ -102,31 +152,33 @@ function spawnCoins(x, y) {
     }
 }
 
-/* scroll */
+/* SCROLL */
 window.addEventListener("scroll", () => {
     const max = document.body.scrollHeight - window.innerHeight;
     target = window.scrollY / max;
 
-    /* money burst during scroll */
     const now = performance.now();
+
     if (now - lastBurst > 90) {
         spawnMoney(window.innerWidth / 2, window.innerHeight / 2);
         lastBurst = now;
     }
 
-    /* detect bottom */
-    if (target >= 0.98 && !coinBurstTriggered) {
+    /* BOTTOM TRIGGER */
+    if (target >= 0.98 && !triggered) {
         spawnCoins(window.innerWidth / 2, window.innerHeight / 2);
-        coinBurstTriggered = true;
+
+        banner.style.transform = "translateY(0)";
+        triggered = true;
     }
 
-    /* reset if scroll back up */
     if (target < 0.9) {
-        coinBurstTriggered = false;
+        triggered = false;
+        banner.style.transform = "translateY(-130px)";
     }
 });
 
-/* animation loop */
+/* ANIMATION */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -141,10 +193,8 @@ function animate() {
         scale(${1 - squeeze * 0.08})
     `;
 
-    /* clear canvas */
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    /* draw particles */
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
@@ -155,7 +205,6 @@ function animate() {
 
         ctx.save();
         ctx.globalAlpha = p.life;
-
         ctx.translate(p.x, p.y);
 
         if (p.type === "coin") {
@@ -171,9 +220,7 @@ function animate() {
 
         ctx.restore();
 
-        if (p.life <= 0) {
-            particles.splice(i, 1);
-        }
+        if (p.life <= 0) particles.splice(i, 1);
     }
 }
 
