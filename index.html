@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Earnings Stack</title>
+<title>Scroll Money + Earnings + Sound</title>
 
 <style>
 body {
@@ -49,7 +49,7 @@ canvas {
     opacity: 0.6;
 }
 
-/* 💰 EARNINGS COUNTER */
+/* 💰 COUNTER */
 #earnings {
     position: fixed;
     top: 160px;
@@ -98,11 +98,6 @@ canvas {
     inset: 0;
     background: rgba(255,255,255,0.2);
 }
-
-#banner span {
-    position: relative;
-    z-index: 2;
-}
 </style>
 </head>
 
@@ -118,7 +113,10 @@ canvas {
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll → earn money 💸 → bills stack like real earnings</div>
+<div class="text">Scroll → earn money 💸 → with sound 🔊</div>
+
+<!-- 🔊 SOUND -->
+<audio id="cashSound" src="cash.mp3" preload="auto"></audio>
 
 <script>
 window.addEventListener("load", () => {
@@ -129,6 +127,7 @@ const ctx = canvas.getContext("2d");
 const hand = document.getElementById("hand");
 const banner = document.getElementById("banner");
 const earningsEl = document.getElementById("earnings");
+const sound = document.getElementById("cashSound");
 
 let target = 0;
 let current = 0;
@@ -147,6 +146,13 @@ function resize() {
 }
 resize();
 window.addEventListener("resize", resize);
+
+/* 🔊 play sound safely */
+function playCash() {
+    const s = sound.cloneNode(); // allows overlapping sounds
+    s.volume = 0.3;
+    s.play().catch(()=>{});
+}
 
 /* 💸 MONEY */
 function spawnMoney(x, y) {
@@ -200,7 +206,7 @@ window.addEventListener("scroll", () => {
     }
 });
 
-/* ANIMATION LOOP */
+/* ANIMATION */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -216,27 +222,23 @@ function animate() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    /* 🧱 STACK DRAW */
-    for (let i = 0; i < stack.length; i++) {
-        const b = stack[i];
-
+    /* STACK */
+    for (let b of stack) {
         ctx.save();
         ctx.translate(b.x, b.y);
         ctx.rotate(b.rot);
 
         ctx.fillStyle = "#00c853";
         ctx.fillRect(-20, -12, 40, 24);
-
         ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.strokeRect(-20, -12, 40, 24);
-
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.fillRect(-10, -6, 20, 12);
 
         ctx.restore();
     }
 
-    /* 💸 PARTICLES */
+    /* PARTICLES */
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
@@ -257,9 +259,7 @@ function animate() {
             ctx.fill();
         } else {
 
-            /* 💰 BILL STACK LOGIC */
             if (p.y > canvas.height - 40) {
-
                 stack.push({
                     x: p.x,
                     y: canvas.height - 40,
@@ -267,6 +267,7 @@ function animate() {
                 });
 
                 earnings += 1;
+                playCash(); // 🔊 SOUND TRIGGER
 
                 particles.splice(i, 1);
                 ctx.restore();
@@ -275,10 +276,8 @@ function animate() {
 
             ctx.fillStyle = "#00c853";
             ctx.fillRect(-20, -12, 40, 24);
-
             ctx.strokeStyle = "rgba(0,0,0,0.3)";
             ctx.strokeRect(-20, -12, 40, 24);
-
             ctx.fillStyle = "rgba(255,255,255,0.2)";
             ctx.fillRect(-10, -6, 20, 12);
         }
@@ -288,7 +287,6 @@ function animate() {
         if (p.life <= 0) particles.splice(i, 1);
     }
 
-    /* 💰 SMOOTH COUNTER */
     displayedEarnings += (earnings - displayedEarnings) * 0.08;
     earningsEl.textContent = "Earnings: $" + displayedEarnings.toFixed(0);
 }
