@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Italian Banner (Cross Browser)</title>
+<title>Scroll Money + Banner (Stable Version)</title>
 
 <style>
 body {
@@ -12,7 +12,9 @@ body {
     overflow-x: hidden;
 }
 
-/* HAND */
+/* =========================
+   HAND (CSS VERSION - NO EMOJI)
+========================= */
 .wrap {
     position: fixed;
     top: 50%;
@@ -22,8 +24,55 @@ body {
 }
 
 .hand {
-    font-size: 140px;
-    user-select: none;
+    width: 90px;
+    height: 140px;
+    position: relative;
+}
+
+/* palm */
+.palm {
+    width: 70px;
+    height: 80px;
+    background: #f1c7a6;
+    border-radius: 25px;
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+}
+
+/* thumb */
+.thumb {
+    width: 18px;
+    height: 55px;
+    background: #e0ad86;
+    border-radius: 10px;
+    position: absolute;
+    left: -5px;
+    bottom: 35px;
+    transform-origin: bottom center;
+    transform: rotate(-35deg);
+}
+
+/* index finger */
+.index {
+    width: 16px;
+    height: 65px;
+    background: #f1c7a6;
+    border-radius: 10px;
+    position: absolute;
+    left: 25px;
+    bottom: 75px;
+}
+
+/* middle finger */
+.middle {
+    width: 16px;
+    height: 70px;
+    background: #f1c7a6;
+    border-radius: 10px;
+    position: absolute;
+    left: 45px;
+    bottom: 70px;
 }
 
 /* CANVAS */
@@ -32,7 +81,6 @@ canvas {
     top: 0;
     left: 0;
     pointer-events: none;
-    display: block;
 }
 
 /* TEXT */
@@ -74,7 +122,6 @@ canvas {
     transform: translateY(-140px);
     transition: transform 0.7s ease;
     z-index: 10;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
 #banner::after {
@@ -82,6 +129,11 @@ canvas {
     position: absolute;
     inset: 0;
     background: rgba(255,255,255,0.2);
+}
+
+#banner span {
+    position: relative;
+    z-index: 2;
 }
 </style>
 </head>
@@ -93,16 +145,17 @@ canvas {
 <div id="banner"><span>Happy Anniversary, Denny!</span></div>
 
 <div class="wrap">
-    <div id="hand" class="hand">🤌</div>
+    <div class="hand" id="hand">
+        <div class="palm"></div>
+        <div class="thumb"></div>
+        <div class="index"></div>
+        <div class="middle"></div>
+    </div>
 </div>
 
 <div class="text">Scroll to generate money 💸 → bottom = surprise</div>
 
 <script>
-/* =========================
-   SAFE INIT (IMPORTANT FIX)
-========================= */
-
 window.addEventListener("load", () => {
 
 const canvas = document.getElementById("fx");
@@ -118,7 +171,6 @@ let triggered = false;
 
 const particles = [];
 
-/* FIXED resize (cross-browser safe) */
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -153,11 +205,11 @@ function spawnCoins(x, y) {
     }
 }
 
-/* scroll (more stable in Chrome) */
+/* scroll */
 window.addEventListener("scroll", () => {
 
     const max = document.documentElement.scrollHeight - window.innerHeight;
-    target = (window.pageYOffset || document.documentElement.scrollTop) / max;
+    target = window.pageYOffset / max;
 
     const now = performance.now();
 
@@ -166,6 +218,7 @@ window.addEventListener("scroll", () => {
         lastBurst = now;
     }
 
+    /* bottom trigger */
     if (target >= 0.98 && !triggered) {
         spawnCoins(window.innerWidth / 2, window.innerHeight / 2);
         banner.style.transform = "translateY(0)";
@@ -178,7 +231,7 @@ window.addEventListener("scroll", () => {
     }
 });
 
-/* animation loop */
+/* animation */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -187,7 +240,6 @@ function animate() {
     const squeeze = Math.pow(Math.abs(Math.sin(current * 6 * Math.PI)), 1.5);
     const rub = Math.sin(current * 30);
 
-    /* safer transform (Chrome fix) */
     hand.style.transform =
         "translate(" + (rub * 6) + "px," + (squeeze * -4) + "px) " +
         "rotate(" + (rub * 8) + "deg) " +
@@ -227,7 +279,6 @@ function animate() {
 animate();
 
 });
-
 </script>
 
 </body>
