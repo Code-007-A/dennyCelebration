@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Italian Banner</title>
+<title>Scroll Money + Italian Banner (Cross Browser)</title>
 
 <style>
 body {
@@ -18,10 +18,12 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    will-change: transform;
 }
 
 .hand {
     font-size: 140px;
+    user-select: none;
 }
 
 /* CANVAS */
@@ -30,6 +32,7 @@ canvas {
     top: 0;
     left: 0;
     pointer-events: none;
+    display: block;
 }
 
 /* TEXT */
@@ -68,24 +71,17 @@ canvas {
     font-weight: bold;
     color: #111;
 
-    transform: translateY(-130px);
-    transition: transform 0.8s ease;
+    transform: translateY(-140px);
+    transition: transform 0.7s ease;
     z-index: 10;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
-/* readability overlay */
 #banner::after {
     content: "";
     position: absolute;
     inset: 0;
     background: rgba(255,255,255,0.2);
-}
-
-/* text above overlay */
-#banner span {
-    position: relative;
-    z-index: 2;
 }
 </style>
 </head>
@@ -94,28 +90,24 @@ canvas {
 
 <canvas id="fx"></canvas>
 
-<!-- 🇮🇹 Banner -->
 <div id="banner"><span>Happy Anniversary, Denny!</span></div>
 
 <div class="wrap">
     <div id="hand" class="hand">🤌</div>
 </div>
 
-<div class="text">Scroll to generate money 💸 → reach bottom for surprise</div>
+<div class="text">Scroll to generate money 💸 → bottom = surprise</div>
 
 <script>
+/* =========================
+   SAFE INIT (IMPORTANT FIX)
+========================= */
+
+window.addEventListener("load", () => {
+
 const canvas = document.getElementById("fx");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-
-/* HAND */
 const hand = document.getElementById("hand");
 const banner = document.getElementById("banner");
 
@@ -124,9 +116,17 @@ let current = 0;
 let lastBurst = 0;
 let triggered = false;
 
-/* PARTICLES */
 const particles = [];
 
+/* FIXED resize (cross-browser safe) */
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+/* money */
 function spawnMoney(x, y) {
     for (let i = 0; i < 14; i++) {
         particles.push({
@@ -139,6 +139,7 @@ function spawnMoney(x, y) {
     }
 }
 
+/* coins */
 function spawnCoins(x, y) {
     for (let i = 0; i < 45; i++) {
         particles.push({
@@ -152,10 +153,11 @@ function spawnCoins(x, y) {
     }
 }
 
-/* SCROLL */
+/* scroll (more stable in Chrome) */
 window.addEventListener("scroll", () => {
-    const max = document.body.scrollHeight - window.innerHeight;
-    target = window.scrollY / max;
+
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    target = (window.pageYOffset || document.documentElement.scrollTop) / max;
 
     const now = performance.now();
 
@@ -164,21 +166,19 @@ window.addEventListener("scroll", () => {
         lastBurst = now;
     }
 
-    /* BOTTOM TRIGGER */
     if (target >= 0.98 && !triggered) {
         spawnCoins(window.innerWidth / 2, window.innerHeight / 2);
-
         banner.style.transform = "translateY(0)";
         triggered = true;
     }
 
     if (target < 0.9) {
         triggered = false;
-        banner.style.transform = "translateY(-130px)";
+        banner.style.transform = "translateY(-140px)";
     }
 });
 
-/* ANIMATION */
+/* animation loop */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -187,11 +187,11 @@ function animate() {
     const squeeze = Math.pow(Math.abs(Math.sin(current * 6 * Math.PI)), 1.5);
     const rub = Math.sin(current * 30);
 
-    hand.style.transform = `
-        translate(${rub * 6}px, ${squeeze * -4}px)
-        rotate(${rub * 8}deg)
-        scale(${1 - squeeze * 0.08})
-    `;
+    /* safer transform (Chrome fix) */
+    hand.style.transform =
+        "translate(" + (rub * 6) + "px," + (squeeze * -4) + "px) " +
+        "rotate(" + (rub * 8) + "deg) " +
+        "scale(" + (1 - squeeze * 0.08) + ")";
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -225,6 +225,9 @@ function animate() {
 }
 
 animate();
+
+});
+
 </script>
 
 </body>
