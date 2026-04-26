@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Banner (Stable Version)</title>
+<title>Scroll Money + Custom Hand</title>
 
 <style>
 body {
@@ -12,9 +12,7 @@ body {
     overflow-x: hidden;
 }
 
-/* =========================
-   HAND (CSS VERSION - NO EMOJI)
-========================= */
+/* HAND WRAPPER */
 .wrap {
     position: fixed;
     top: 50%;
@@ -23,56 +21,14 @@ body {
     will-change: transform;
 }
 
-.hand {
-    width: 90px;
-    height: 140px;
-    position: relative;
-}
-
-/* palm */
-.palm {
-    width: 70px;
-    height: 80px;
-    background: #f1c7a6;
-    border-radius: 25px;
-    position: absolute;
-    bottom: 0;
-    left: 10px;
-}
-
-/* thumb */
-.thumb {
-    width: 18px;
-    height: 55px;
-    background: #e0ad86;
-    border-radius: 10px;
-    position: absolute;
-    left: -5px;
-    bottom: 35px;
-    transform-origin: bottom center;
-    transform: rotate(-35deg);
-}
-
-/* index finger */
-.index {
-    width: 16px;
-    height: 65px;
-    background: #f1c7a6;
-    border-radius: 10px;
-    position: absolute;
-    left: 25px;
-    bottom: 75px;
-}
-
-/* middle finger */
-.middle {
-    width: 16px;
-    height: 70px;
-    background: #f1c7a6;
-    border-radius: 10px;
-    position: absolute;
-    left: 45px;
-    bottom: 70px;
+/* 🖼️ YOUR CUSTOM HAND IMAGE */
+#hand {
+    width: 160px;
+    height: 160px;
+    background-image: url("hand.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 /* CANVAS */
@@ -145,12 +101,7 @@ canvas {
 <div id="banner"><span>Happy Anniversary, Denny!</span></div>
 
 <div class="wrap">
-    <div class="hand" id="hand">
-        <div class="palm"></div>
-        <div class="thumb"></div>
-        <div class="index"></div>
-        <div class="middle"></div>
-    </div>
+    <div id="hand"></div>
 </div>
 
 <div class="text">Scroll to generate money 💸 → bottom = surprise</div>
@@ -178,7 +129,7 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-/* money */
+/* MONEY */
 function spawnMoney(x, y) {
     for (let i = 0; i < 14; i++) {
         particles.push({
@@ -191,7 +142,7 @@ function spawnMoney(x, y) {
     }
 }
 
-/* coins */
+/* COINS */
 function spawnCoins(x, y) {
     for (let i = 0; i < 45; i++) {
         particles.push({
@@ -205,7 +156,7 @@ function spawnCoins(x, y) {
     }
 }
 
-/* scroll */
+/* SCROLL */
 window.addEventListener("scroll", () => {
 
     const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -218,7 +169,6 @@ window.addEventListener("scroll", () => {
         lastBurst = now;
     }
 
-    /* bottom trigger */
     if (target >= 0.98 && !triggered) {
         spawnCoins(window.innerWidth / 2, window.innerHeight / 2);
         banner.style.transform = "translateY(0)";
@@ -231,7 +181,7 @@ window.addEventListener("scroll", () => {
     }
 });
 
-/* animation */
+/* ANIMATION */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -240,11 +190,13 @@ function animate() {
     const squeeze = Math.pow(Math.abs(Math.sin(current * 6 * Math.PI)), 1.5);
     const rub = Math.sin(current * 30);
 
+    /* apply motion to image */
     hand.style.transform =
         "translate(" + (rub * 6) + "px," + (squeeze * -4) + "px) " +
         "rotate(" + (rub * 8) + "deg) " +
         "scale(" + (1 - squeeze * 0.08) + ")";
 
+    /* particles */
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let i = particles.length - 1; i >= 0; i--) {
