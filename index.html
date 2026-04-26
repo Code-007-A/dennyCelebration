@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Big Cash Bills</title>
+<title>Scroll Money + Stack Earnings</title>
 
 <style>
 body {
@@ -103,7 +103,7 @@ canvas {
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll to generate money 💸 → bottom = surprise</div>
+<div class="text">Scroll → earn money 💸 → bills stack at bottom</div>
 
 <script>
 window.addEventListener("load", () => {
@@ -120,6 +120,7 @@ let lastBurst = 0;
 let triggered = false;
 
 const particles = [];
+const stack = [];   // 🧱 MONEY STACK
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -128,7 +129,7 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-/* 💸 MONEY BURST */
+/* 💸 MONEY */
 function spawnMoney(x, y) {
     for (let i = 0; i < 14; i++) {
         particles.push({
@@ -180,7 +181,7 @@ window.addEventListener("scroll", () => {
     }
 });
 
-/* ANIMATION LOOP */
+/* ANIMATION */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -194,10 +195,29 @@ function animate() {
         "rotate(" + (rub * 8) + "deg) " +
         "scale(" + (1 - squeeze * 0.08) + ")";
 
-    /* CLEAR */
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    /* PARTICLES */
+    /* 🧱 DRAW STACKED MONEY */
+    for (let i = 0; i < stack.length; i++) {
+        const b = stack[i];
+
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+
+        ctx.fillStyle = "#00c853";
+        ctx.fillRect(-20, -12, 40, 24);
+
+        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.strokeRect(-20, -12, 40, 24);
+
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.fillRect(-10, -6, 20, 12);
+
+        ctx.restore();
+    }
+
+    /* 💸 PARTICLES */
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
@@ -217,7 +237,20 @@ function animate() {
             ctx.arc(0, 0, 6, 0, Math.PI * 2);
             ctx.fill();
         } else {
-            /* 💸 BIG CASH BILL */
+
+            /* 💰 BIG CASH BILL */
+            if (p.y > canvas.height - 40) {
+                stack.push({
+                    x: p.x,
+                    y: canvas.height - 40,
+                    rot: (Math.random() - 0.5) * 0.4
+                });
+
+                particles.splice(i, 1);
+                ctx.restore();
+                continue;
+            }
+
             ctx.fillStyle = "#00c853";
             ctx.fillRect(-20, -12, 40, 24);
 
