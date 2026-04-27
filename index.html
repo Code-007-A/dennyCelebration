@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Italian Currency Earnings</title>
+<title>Scroll Money + Sound UI Upgrade</title>
 
 <style>
 body {
@@ -54,36 +54,31 @@ canvas {
     font-family: Arial;
     font-size: 22px;
     font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
-/* 🇮🇹 CSS FLAG */
-.flag-it {
-    width: 22px;
-    height: 14px;
-    display: inline-block;
-    background: linear-gradient(
-        90deg,
-        #009246 0%,
-        #009246 33%,
-        #ffffff 33%,
-        #ffffff 66%,
-        #ce2b37 66%,
-        #ce2b37 100%
-    );
-    border: 1px solid rgba(0,0,0,0.2);
-}
-
-/* 🔊 hint */
+/* 🔊 BIGGER SOUND NOTICE (50% larger) */
 #hint {
     position: fixed;
-    top: 10px;
+    top: 18px;
     right: 20px;
     color: white;
-    font-size: 12px;
-    opacity: 0.7;
+    font-family: Arial;
+
+    /* 50% bigger than before */
+    font-size: 24px;
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 14px 18px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+
+    backdrop-filter: blur(6px);
+    z-index: 50;
 }
 
 /* 🇮🇹 BANNER */
@@ -106,12 +101,14 @@ canvas {
 
 <body>
 
-<div id="hint">Click anywhere to enable sound 🔊</div>
+<!-- 🔊 SOUND NOTICE -->
+<div id="hint">
+    <span style="font-size:32px;">🔊</span>
+    Click anywhere to enable sound
+</div>
 
 <div id="earnings">
-    Earnings: $0 |
-    <span class="flag-it"></span>
-    Italian Currency €0
+    Earnings: $0 | 🇮🇹 Italian Currency €0
 </div>
 
 <canvas id="fx"></canvas>
@@ -134,6 +131,7 @@ const hand = document.getElementById("hand");
 const banner = document.getElementById("banner");
 const earningsEl = document.getElementById("earnings");
 const sound = document.getElementById("cashSound");
+const hint = document.getElementById("hint");
 
 let target = 0, current = 0, lastBurst = 0, triggered = false;
 let earnings = 0, displayed = 0;
@@ -153,7 +151,9 @@ function unlockAudio() {
         sound.pause();
         sound.currentTime = 0;
         audioUnlocked = true;
-        document.getElementById("hint").style.display = "none";
+
+        hint.style.opacity = "0";
+        setTimeout(()=>hint.style.display="none", 400);
     }).catch(()=>{});
 }
 
@@ -162,7 +162,6 @@ window.addEventListener("touchstart", unlockAudio);
 
 function playCash() {
     if (!audioUnlocked) return;
-
     const s = sound.cloneNode();
     s.volume = 0.3;
     s.play().catch(()=>{});
@@ -226,7 +225,7 @@ addEventListener("scroll",()=>{
     }
 });
 
-/* ANIMATE */
+/* ANIMATION */
 function animate(){
     requestAnimationFrame(animate);
 
@@ -294,9 +293,9 @@ function animate(){
     displayed += (earnings - displayed)*0.08;
     const eur = displayed * usdToEur;
 
-    earningsEl.innerHTML =
-        'Earnings: $' + Math.floor(displayed) +
-        ' | <span class="flag-it"></span> Italian Currency €' + Math.floor(eur);
+    earningsEl.textContent =
+        "Earnings: $" + Math.floor(displayed) +
+        " | 🇮🇹 Italian Currency €" + Math.floor(eur);
 }
 
 animate();
