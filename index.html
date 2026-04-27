@@ -54,6 +54,26 @@ canvas {
     font-family: Arial;
     font-size: 22px;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 🇮🇹 CSS FLAG */
+.flag-it {
+    width: 22px;
+    height: 14px;
+    display: inline-block;
+    background: linear-gradient(
+        90deg,
+        #009246 0%,
+        #009246 33%,
+        #ffffff 33%,
+        #ffffff 66%,
+        #ce2b37 66%,
+        #ce2b37 100%
+    );
+    border: 1px solid rgba(0,0,0,0.2);
 }
 
 /* 🔊 hint */
@@ -87,7 +107,12 @@ canvas {
 <body>
 
 <div id="hint">Click anywhere to enable sound 🔊</div>
-<div id="earnings">Earnings: $0 | 🇮🇹 Italian Currency €0</div>
+
+<div id="earnings">
+    Earnings: $0 |
+    <span class="flag-it"></span>
+    Italian Currency €0
+</div>
 
 <canvas id="fx"></canvas>
 
@@ -97,7 +122,7 @@ canvas {
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll → earn money 💸 → bills stack + sound</div>
+<div class="text">Scroll → earn money 💸</div>
 
 <audio id="cashSound" src="cash.mp3" preload="auto"></audio>
 
@@ -265,13 +290,13 @@ function animate(){
         if(p.life<=0) particles.splice(i,1);
     }
 
-    /* 💰 UPDATE COUNTER */
+    /* 💰 UPDATE */
     displayed += (earnings - displayed)*0.08;
     const eur = displayed * usdToEur;
 
-    earningsEl.textContent =
-        "Earnings: $" + Math.floor(displayed) +
-        " | 🇮🇹 Italian Currency €" + Math.floor(eur);
+    earningsEl.innerHTML =
+        'Earnings: $' + Math.floor(displayed) +
+        ' | <span class="flag-it"></span> Italian Currency €' + Math.floor(eur);
 }
 
 animate();
