@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money Fixed Full FX</title>
+<title>Scroll Money FX Fixed</title>
 
 <style>
 body {
@@ -12,7 +12,6 @@ body {
     overflow-x: hidden;
 }
 
-/* HAND */
 .wrap {
     position: fixed;
     top: 50%;
@@ -26,7 +25,6 @@ body {
     background: url("hand.png") center/contain no-repeat;
 }
 
-/* CANVAS */
 canvas {
     position: fixed;
     top: 0;
@@ -34,7 +32,6 @@ canvas {
     pointer-events: none;
 }
 
-/* EARNINGS */
 #earnings {
     position: fixed;
     top: 20px;
@@ -45,7 +42,6 @@ canvas {
     font-weight: bold;
 }
 
-/* TEXT */
 .text {
     position: fixed;
     bottom: 40px;
@@ -68,7 +64,7 @@ canvas {
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll to earn money 💸</div>
+<div class="text">Scroll to generate money 💸</div>
 
 <script>
 const canvas = document.getElementById("fx");
@@ -81,7 +77,6 @@ let current = 0;
 let earnings = 0;
 
 const particles = [];
-const stack = [];
 
 /* resize */
 function resize(){
@@ -91,37 +86,42 @@ function resize(){
 resize();
 addEventListener("resize", resize);
 
-/* scroll */
+/* 🔥 SCROLL */
 addEventListener("scroll", () => {
-    const maxScroll = document.body.scrollHeight - innerHeight;
-    target = scrollY / maxScroll;
+    const max = document.body.scrollHeight - innerHeight;
+    target = scrollY / max;
 
-    /* 💸 spawn money constantly while scrolling */
+    /* ALWAYS spawn effects while scrolling */
     spawnMoney(innerWidth/2, innerHeight/2);
+
+    /* rare coin burst */
+    if (Math.random() < 0.2) {
+        spawnCoins(innerWidth/2, innerHeight/2);
+    }
 });
 
 /* 💸 MONEY */
-function spawnMoney(x, y) {
-    for (let i = 0; i < 6; i++) {
+function spawnMoney(x, y){
+    for (let i = 0; i < 5; i++) {
         particles.push({
             x,
             y,
-            vx: (Math.random() - 0.5) * 8,
-            vy: (Math.random() - 1) * 10,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 1) * 8,
             life: 1,
             type: "bill"
         });
     }
 }
 
-/* 💰 COINS (rare burst) */
-function spawnCoins(x, y) {
-    for (let i = 0; i < 10; i++) {
+/* 💰 COINS */
+function spawnCoins(x, y){
+    for (let i = 0; i < 8; i++) {
         particles.push({
             x,
             y,
-            vx: (Math.random() - 0.5) * 12,
-            vy: (Math.random() - 1.2) * 14,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 1.2) * 12,
             life: 1,
             type: "coin",
             rot: Math.random() * 360
@@ -129,26 +129,17 @@ function spawnCoins(x, y) {
     }
 }
 
-/* animation */
+/* ANIMATE */
 function animate(){
     requestAnimationFrame(animate);
 
-    current += (target - current) * 0.1;
+    current += (target - current) * 0.08;
 
-    /* 🔥 FIXED COUNTER (smooth + reliable) */
-    earnings = Math.floor(current * 2000);
+    /* FIXED COUNTER */
+    earnings = Math.floor(current * 2500);
     earningsEl.textContent = "Earnings: $" + earnings;
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    /* STACK */
-    for (let b of stack) {
-        ctx.save();
-        ctx.translate(b.x, b.y);
-        ctx.fillStyle = "#00c853";
-        ctx.fillRect(-20, -12, 40, 24);
-        ctx.restore();
-    }
 
     /* PARTICLES */
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -156,15 +147,15 @@ function animate(){
 
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.3;
-        p.life -= 0.02;
+        p.vy += 0.25;
+        p.life -= 0.015;
 
         ctx.save();
         ctx.globalAlpha = p.life;
         ctx.translate(p.x, p.y);
 
         if (p.type === "coin") {
-            ctx.rotate((p.rot += 5) * Math.PI / 180);
+            ctx.rotate((p.rot += 6) * Math.PI / 180);
             ctx.fillStyle = "#ffd700";
             ctx.beginPath();
             ctx.arc(0, 0, 6, 0, Math.PI * 2);
@@ -176,18 +167,14 @@ function animate(){
 
         ctx.restore();
 
-        /* 🧱 STACK WHEN HITS BOTTOM */
-        if (p.y > canvas.height - 40) {
-            stack.push({ x: p.x, y: canvas.height - 40 });
+        if (p.life <= 0) {
             particles.splice(i, 1);
         }
-
-        if (p.life <= 0) particles.splice(i, 1);
     }
 
-    /* hand motion */
+    /* hand animation */
     const move = Math.sin(current * 10) * 6;
-    hand.style.transform = `translate(${move}px, ${-move}px)`;
+    hand.style.transform = `translate(${move}px,${-move}px)`;
 }
 
 animate();
