@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scroll Earnings Fixed</title>
+
+<style>
+body {
+    margin: 0;
+    height: 400vh;
+    background: radial-gradient(circle at center, #111, #000);
+    overflow-x: hidden;
+}
+
+/* HAND */
+.wrap {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#hand {
+    width: 160px;
+    height: 160px;
+    background: url("hand.png") center/contain no-repeat;
+}
+
+/* CANVAS */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+/* EARNINGS */
+#earnings {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #00ff88;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* TEXT */
+.text {
+    position: fixed;
+    bottom: 40px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+
+<div id="earnings">Earnings: $0</div>
+
+<canvas id="fx"></canvas>
+
+<div class="wrap">
+    <div id="hand"></div>
+</div>
+
+<div class="text">Scroll to earn money 💸</div>
+
+<script>
+const canvas = document.getElementById("fx");
+const ctx = canvas.getContext("2d");
+const earningsEl = document.getElementById("earnings");
+const hand = document.getElementById("hand");
+
+let target = 0;
+let current = 0;
+let earnings = 0;
+
+/* resize */
+function resize(){
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+/* scroll tracking FIX */
+addEventListener("scroll", () => {
+    const maxScroll = document.body.scrollHeight - innerHeight;
+    target = scrollY / maxScroll;
+});
+
+/* animation loop */
+function animate(){
+    requestAnimationFrame(animate);
+
+    /* smooth scroll value */
+    current += (target - current) * 0.1;
+
+    /* 🔥 FIX: earnings now ALWAYS updates */
+    earnings = Math.floor(current * 1000);
+
+    earningsEl.textContent = "Earnings: $" + earnings;
+
+    /* simple hand motion */
+    const move = Math.sin(current * 10) * 6;
+    hand.style.transform = `translate(${move}px, ${-move}px)`;
+}
+
+animate();
+</script>
+
+</body>
+</html>
