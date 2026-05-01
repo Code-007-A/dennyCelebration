@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Money + Sound UI Upgrade</title>
+<title>Scroll Earnings Fixed</title>
 
 <style>
 body {
@@ -34,6 +34,17 @@ canvas {
     pointer-events: none;
 }
 
+/* EARNINGS */
+#earnings {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #00ff88;
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: bold;
+}
+
 /* TEXT */
 .text {
     position: fixed;
@@ -44,258 +55,60 @@ canvas {
     font-family: Arial;
     opacity: 0.6;
 }
-
-/* 💰 EARNINGS */
-#earnings {
-    position: fixed;
-    top: 160px;
-    left: 20px;
-    color: #00ff88;
-    font-family: Arial;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* 🔊 BIGGER SOUND NOTICE (50% larger) */
-#hint {
-    position: fixed;
-    top: 18px;
-    right: 20px;
-    color: white;
-    font-family: Arial;
-
-    /* 50% bigger than before */
-    font-size: 24px;
-    font-weight: bold;
-
-    display: flex;
-    align-items: center;
-    gap: 14px;
-
-    padding: 14px 18px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
-
-    backdrop-filter: blur(6px);
-    z-index: 50;
-}
-
-/* 🇮🇹 BANNER */
-#banner {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 130px;
-    background: linear-gradient(90deg,#009246,#fff,#ce2b37);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 48px;
-    transform: translateY(-140px);
-    transition: 0.7s;
-}
 </style>
 </head>
 
 <body>
 
-<!-- 🔊 SOUND NOTICE -->
-<div id="hint">
-    <span style="font-size:32px;">🔊</span>
-    Click anywhere to enable sound
-</div>
-
-<div id="earnings">
-    Earnings: $0 | 🇮🇹 Italian Currency €0
-</div>
+<div id="earnings">Earnings: $0</div>
 
 <canvas id="fx"></canvas>
-
-<div id="banner">Happy Anniversary, Denny!</div>
 
 <div class="wrap">
     <div id="hand"></div>
 </div>
 
-<div class="text">Scroll → earn money 💸</div>
-
-<audio id="cashSound" src="cash.mp3" preload="auto"></audio>
+<div class="text">Scroll to earn money 💸</div>
 
 <script>
 const canvas = document.getElementById("fx");
 const ctx = canvas.getContext("2d");
-
-const hand = document.getElementById("hand");
-const banner = document.getElementById("banner");
 const earningsEl = document.getElementById("earnings");
-const sound = document.getElementById("cashSound");
-const hint = document.getElementById("hint");
+const hand = document.getElementById("hand");
 
-let target = 0, current = 0, lastBurst = 0, triggered = false;
-let earnings = 0, displayed = 0;
+let target = 0;
+let current = 0;
+let earnings = 0;
 
-const usdToEur = 0.92;
-
-const particles = [];
-const stack = [];
-
-/* 🔊 AUDIO FIX */
-let audioUnlocked = false;
-
-function unlockAudio() {
-    if (audioUnlocked) return;
-
-    sound.play().then(() => {
-        sound.pause();
-        sound.currentTime = 0;
-        audioUnlocked = true;
-
-        hint.style.opacity = "0";
-        setTimeout(()=>hint.style.display="none", 400);
-    }).catch(()=>{});
-}
-
-window.addEventListener("click", unlockAudio);
-window.addEventListener("touchstart", unlockAudio);
-
-function playCash() {
-    if (!audioUnlocked) return;
-    const s = sound.cloneNode();
-    s.volume = 0.3;
-    s.play().catch(()=>{});
-}
-
-/* RESIZE */
-function resize() {
+/* resize */
+function resize(){
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 }
 resize();
 addEventListener("resize", resize);
 
-/* MONEY */
-function spawnMoney(x,y){
-    for(let i=0;i<14;i++){
-        particles.push({
-            x,y,
-            vx:(Math.random()-0.5)*8,
-            vy:(Math.random()-0.8)*10,
-            life:1,
-            type:"bill"
-        });
-    }
-}
-
-/* COINS */
-function spawnCoins(x,y){
-    for(let i=0;i<45;i++){
-        particles.push({
-            x,y,
-            vx:(Math.random()-0.5)*12,
-            vy:(Math.random()-1.2)*14,
-            life:1,
-            type:"coin",
-            rot:Math.random()*360
-        });
-    }
-}
-
-/* SCROLL */
-addEventListener("scroll",()=>{
-    const max = document.body.scrollHeight - innerHeight;
-    target = scrollY / max;
-
-    const now = performance.now();
-    if(now - lastBurst > 90){
-        spawnMoney(innerWidth/2, innerHeight/2);
-        lastBurst = now;
-    }
-
-    if(target >= 0.98 && !triggered){
-        spawnCoins(innerWidth/2, innerHeight/2);
-        banner.style.transform = "translateY(0)";
-        triggered = true;
-    }
-
-    if(target < 0.9){
-        triggered = false;
-        banner.style.transform = "translateY(-140px)";
-    }
+/* scroll tracking FIX */
+addEventListener("scroll", () => {
+    const maxScroll = document.body.scrollHeight - innerHeight;
+    target = scrollY / maxScroll;
 });
 
-/* ANIMATION */
+/* animation loop */
 function animate(){
     requestAnimationFrame(animate);
 
-    current += (target-current)*0.08;
+    /* smooth scroll value */
+    current += (target - current) * 0.1;
 
-    const squeeze = Math.abs(Math.sin(current*6*Math.PI));
-    const rub = Math.sin(current*30);
+    /* 🔥 FIX: earnings now ALWAYS updates */
+    earnings = Math.floor(current * 1000);
 
-    hand.style.transform =
-        `translate(${rub*6}px,${-squeeze*4}px) rotate(${rub*8}deg) scale(${1-squeeze*0.08})`;
+    earningsEl.textContent = "Earnings: $" + earnings;
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    /* STACK */
-    stack.forEach(b=>{
-        ctx.save();
-        ctx.translate(b.x,b.y);
-        ctx.rotate(b.rot);
-        ctx.fillStyle="#00c853";
-        ctx.fillRect(-20,-12,40,24);
-        ctx.restore();
-    });
-
-    /* PARTICLES */
-    for(let i=particles.length-1;i>=0;i--){
-        const p = particles[i];
-
-        p.x+=p.vx;
-        p.y+=p.vy;
-        p.vy+=0.3;
-        p.life-=0.02;
-
-        ctx.save();
-        ctx.globalAlpha=p.life;
-        ctx.translate(p.x,p.y);
-
-        if(p.type==="coin"){
-            ctx.rotate((p.rot+=5)*Math.PI/180);
-            ctx.fillStyle="#ffd700";
-            ctx.beginPath();
-            ctx.arc(0,0,6,0,Math.PI*2);
-            ctx.fill();
-        } else {
-
-            if(p.y > canvas.height-40){
-                stack.push({x:p.x,y:canvas.height-40,rot:(Math.random()-0.5)*0.4});
-                earnings++;
-                playCash();
-
-                particles.splice(i,1);
-                ctx.restore();
-                continue;
-            }
-
-            ctx.fillStyle="#00c853";
-            ctx.fillRect(-20,-12,40,24);
-        }
-
-        ctx.restore();
-
-        if(p.life<=0) particles.splice(i,1);
-    }
-
-    /* 💰 UPDATE */
-    displayed += (earnings - displayed)*0.08;
-    const eur = displayed * usdToEur;
-
-    earningsEl.textContent =
-        "Earnings: $" + Math.floor(displayed) +
-        " | 🇮🇹 Italian Currency €" + Math.floor(eur);
+    /* simple hand motion */
+    const move = Math.sin(current * 10) * 6;
+    hand.style.transform = `translate(${move}px, ${-move}px)`;
 }
 
 animate();
