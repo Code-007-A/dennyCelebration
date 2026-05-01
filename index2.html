@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scroll Earnings Fixed</title>
+<title>Scroll Money Fixed Full FX</title>
 
 <style>
 body {
@@ -80,6 +80,9 @@ let target = 0;
 let current = 0;
 let earnings = 0;
 
+const particles = [];
+const stack = [];
+
 /* resize */
 function resize(){
     canvas.width = innerWidth;
@@ -88,25 +91,101 @@ function resize(){
 resize();
 addEventListener("resize", resize);
 
-/* scroll tracking FIX */
+/* scroll */
 addEventListener("scroll", () => {
     const maxScroll = document.body.scrollHeight - innerHeight;
     target = scrollY / maxScroll;
+
+    /* 💸 spawn money constantly while scrolling */
+    spawnMoney(innerWidth/2, innerHeight/2);
 });
 
-/* animation loop */
+/* 💸 MONEY */
+function spawnMoney(x, y) {
+    for (let i = 0; i < 6; i++) {
+        particles.push({
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 1) * 10,
+            life: 1,
+            type: "bill"
+        });
+    }
+}
+
+/* 💰 COINS (rare burst) */
+function spawnCoins(x, y) {
+    for (let i = 0; i < 10; i++) {
+        particles.push({
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 12,
+            vy: (Math.random() - 1.2) * 14,
+            life: 1,
+            type: "coin",
+            rot: Math.random() * 360
+        });
+    }
+}
+
+/* animation */
 function animate(){
     requestAnimationFrame(animate);
 
-    /* smooth scroll value */
     current += (target - current) * 0.1;
 
-    /* 🔥 FIX: earnings now ALWAYS updates */
-    earnings = Math.floor(current * 1000);
-
+    /* 🔥 FIXED COUNTER (smooth + reliable) */
+    earnings = Math.floor(current * 2000);
     earningsEl.textContent = "Earnings: $" + earnings;
 
-    /* simple hand motion */
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    /* STACK */
+    for (let b of stack) {
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.fillStyle = "#00c853";
+        ctx.fillRect(-20, -12, 40, 24);
+        ctx.restore();
+    }
+
+    /* PARTICLES */
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.3;
+        p.life -= 0.02;
+
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.translate(p.x, p.y);
+
+        if (p.type === "coin") {
+            ctx.rotate((p.rot += 5) * Math.PI / 180);
+            ctx.fillStyle = "#ffd700";
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = "#00c853";
+            ctx.fillRect(-20, -12, 40, 24);
+        }
+
+        ctx.restore();
+
+        /* 🧱 STACK WHEN HITS BOTTOM */
+        if (p.y > canvas.height - 40) {
+            stack.push({ x: p.x, y: canvas.height - 40 });
+            particles.splice(i, 1);
+        }
+
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    /* hand motion */
     const move = Math.sin(current * 10) * 6;
     hand.style.transform = `translate(${move}px, ${-move}px)`;
 }
